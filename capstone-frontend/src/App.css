@@ -1,0 +1,11 @@
+#root {
+  max-width: 1880px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sketchfab-embed-wrapper iframe{
+      height: 100%;
+        width: 100%;
+        min-height: 500px;
+}

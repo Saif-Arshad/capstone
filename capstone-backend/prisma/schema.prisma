@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  fullName  String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model products {
+  id             String   @id @default(uuid())
+  name           String
+  description    String   @db.Text
+  price          Float
+  quantity       Int
+  availableSizes Json
+  availableColor Json
+  EmbedLink      String?  @db.Text
+  images         Image[]
+  createdBy      String?  @default("")
+  category       String?  @default("universal")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model brand {
+  id        String   @id @default(uuid())
+  name      String
+  image     String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   products @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  country    String
+  city       String
+  address    String
+  items      Json
+  totalPrice Float
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  SUPPLIER
+  GARAGE
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
