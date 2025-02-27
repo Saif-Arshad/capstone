@@ -9,7 +9,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 function CheckoutForm() {
     // Retrieve checkout data from localStorage
     const checkoutData = JSON.parse(localStorage.getItem('checkout')) || {};
-    const items = checkoutData.cart || checkoutData.item || {};
+    const items = checkoutData.cart || checkoutData.items || {};
     const total = Number(checkoutData.total) || 0;
 
     // Local state for address fields and loading indicator
@@ -35,7 +35,7 @@ function CheckoutForm() {
             return;
         }
 
-        if (!checkoutData || (!checkoutData.cart && !checkoutData.item)) {
+        if (!checkoutData || (!checkoutData.cart && !checkoutData.items)) {
             toast.error('No Items found');
             window.location.href = '/';
             return;

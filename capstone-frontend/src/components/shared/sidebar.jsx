@@ -36,7 +36,7 @@ const Sidebar = () => {
     ];
     const garageLinks = [
         { Name: "Dashboard", Link: "/dashboard" },
-        { Name: "My Purchases", Link: "/dashboard/my-purchases" },
+        { Name: "My Order", Link: "/dashboard/my-orders" },
         { Name: "Manage Customers", Link: "/dashboard/my-customers" },
     ];
 

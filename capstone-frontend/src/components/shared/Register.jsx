@@ -15,7 +15,8 @@ export default function Register() {
     const [formData, setFormData] = React.useState({
         fullName: '',
         email: '',
-        password: ''
+        password: '',
+        userType: "CUSTOMER"
     });
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
@@ -97,9 +98,23 @@ export default function Register() {
                             placeholder="Password"
                             value={formData.password}
                             onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded focus:outline-none mb-6 ring-1 ring-[#ff4d30]"
+                            className="p-3 border border-gray-300 rounded focus:outline-none ring-1 ring-[#ff4d30]"
                             required
                         />
+                        <div className="grid grid-cols-2 gap-3  mb-10">
+                            <div
+                                onClick={() => setFormData({ ...formData, userType: "CUSTOMER" })}
+
+                                className={`border cursor-pointer ${formData.userType == "CUSTOMER" ? "bg-orange-100 " : "hover:bg-orange-100"}  border-orange-600 rounded-lg flex items-center justify-center p-4`} >
+                                Join as Customer
+                            </div>
+                            <div
+                                onClick={() => setFormData({ ...formData, userType: "GARAGE" })}
+                                className={`border cursor-pointer ${formData.userType == "GARAGE" ? "bg-orange-100 " : "hover:bg-orange-100"}  border-orange-600 rounded-lg flex items-center justify-center p-4`} >
+
+                                Join as Garage
+                            </div>
+                        </div>
                         <div className="flex flex-col lg:flex-row justify-end text-white font-bold gap-6">
                             <button
                                 onClick={handleClose}

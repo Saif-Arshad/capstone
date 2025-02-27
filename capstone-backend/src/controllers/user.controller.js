@@ -7,7 +7,7 @@ const SECRET_KEY = process.env.JWT_SECRET;
 
 exports.register = async (req, res) => {
     try {
-        const { fullName, email, password } = req.body;
+        const { fullName, email, password, userType } = req.body;
         console.log("🚀 ~ exports.register= ~ password:", password)
         console.log("🚀 ~ exports.register= ~ email:", email)
         console.log("🚀 ~ exports.register= ~ fullName:", fullName)
@@ -23,6 +23,7 @@ exports.register = async (req, res) => {
             data: {
                 fullName,
                 email,
+                role: userType,
                 password: hashedPassword,
             },
         });
