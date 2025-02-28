@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
@@ -7,6 +7,37 @@ import { Elements, useStripe, useElements, PaymentElement } from '@stripe/react-
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 function CheckoutForm() {
+    const role = localStorage.getItem("user-role");
+    const token = localStorage.getItem("token");
+    const [customers, setCustomers] = useState([])
+    console.log("🚀 ~ CheckoutForm ~ customers:", customers)
+
+    const userRole = role.replace(/"/g, "");
+    const fetchUsers = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/garage/user/get`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!res.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const { data } = await res.json();
+            console.log("🚀 ~ fetchUsers ~ data:", data)
+            setCustomers(data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            toast.error('Error fetching users');
+        }
+    };
+
+    useEffect(() => {
+        if (userRole == "GARAGE") {
+            fetchUsers()
+        }
+    }, [userRole])
     // Retrieve checkout data from localStorage
     const checkoutData = JSON.parse(localStorage.getItem('checkout')) || {};
     const items = checkoutData.cart || checkoutData.items || {};
@@ -16,6 +47,7 @@ function CheckoutForm() {
     const [country, setCountry] = useState('');
     const [city, setCity] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cod');
+    const [customerId,setCustomerId] = useState()
     const [address, setAddress] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -45,6 +77,7 @@ function CheckoutForm() {
             items,
             totalPrice: total,
             country,
+            customerId,
             city,
             address,
             paymentMethod,
@@ -183,6 +216,39 @@ function CheckoutForm() {
                        dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                             />
                         </div>
+                        {
+                            userRole == "GARAGE" &&
+
+                            <div className="row-span-2 col-span-2">
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="address" className="block text-sm font-medium text-gray-900 dark:text-white">
+                                        Customer Order*
+                                    </label>
+                                </div>
+                                <select
+                                        value={customerId || ""}
+                                        onChange={(e) => setCustomerId(e.target.value)}
+                                        className="block w-full rounded-lg capitalize border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900
+                       focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white
+                       dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                                >
+                                        <option value="" className='flex flex-col capitalize items-start'>
+                                         Select a Customer
+                                        </option>
+                                    {
+                                        customers.length > 0 && customers.map((item, index) => (
+                                            <option value={item.id} key={index} className='flex flex-col capitalize items-start'>
+                                                {item.fullName}
+                                              
+                                            </option>
+
+                                        ))
+                                    }
+
+                                </select>
+                           
+                            </div>
+                        }
                     </div>
 
                     {/* Payment Method Selection */}

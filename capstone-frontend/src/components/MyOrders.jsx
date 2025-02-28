@@ -17,9 +17,13 @@ import {
 import { FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Layout from './shared/Layout';
+import { useLocation } from 'react-router-dom';
 
 function MyOrders() {
-
+    let { search } = useLocation();
+    const query = new URLSearchParams(search);
+    const paramField = query.get('user');
+    console.log("🚀 ~ MyOrders ~ paramField:", paramField)
     const [orders, setOrders] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [searchText, setSearchText] = useState('');
@@ -36,7 +40,17 @@ function MyOrders() {
     const [openItemsModal, setOpenItemsModal] = useState(false);
     const [selectedItems, setSelectedItems] = useState([]);
 
-  
+
+    // useEffect(() => {
+    //     if (paramField) {
+    //         const userOrder = orders.filter((item) => item.customerId === paramField);
+    //         console.log("🚀 ~ useEffect ~ paramField:", paramField);
+    //         console.log("🚀 ~ useEffect ~ userOrder:", userOrder);
+    //         setFilteredOrders(userOrder);
+    //     }
+    // }, [paramField, orders]);
+
+
 
     // ------------------ FETCH ORDERS ------------------
     useEffect(() => {
@@ -71,9 +85,16 @@ function MyOrders() {
                 throw new Error('Failed to fetch orders');
             }
             const { data } = await res.json();
-            setOrders(data);
             console.log("🚀 ~ fetchOrders ~ data:", data);
-            setFilteredOrders(data);
+            if (paramField) {
+                const userOrder = data.filter((item) => item.customerId === paramField);
+                setOrders(userOrder);
+                setFilteredOrders(userOrder);
+            } else {
+                
+                setOrders(data);
+                setFilteredOrders(data);
+            }
         } catch (error) {
             console.error('Error fetching orders:', error);
             toast.error('Error fetching orders');
@@ -138,6 +159,7 @@ function MyOrders() {
                                     <TableCell className="font-semibold">Status</TableCell>
                                     <TableCell className="font-semibold">City</TableCell>
                                     <TableCell className="font-semibold">Country</TableCell>
+                                    <TableCell className="font-semibold">Payement Type</TableCell>
                                     <TableCell align="center" className="font-semibold">
                                         Actions
                                     </TableCell>
@@ -153,6 +175,7 @@ function MyOrders() {
                                             <TableCell>{order.status}</TableCell>
                                             <TableCell>{order.city}</TableCell>
                                             <TableCell>{order.country}</TableCell>
+                                            <TableCell>{order.paymentType}</TableCell>
                                             <TableCell align="center">
                                                 <div className="flex gap-2 justify-center">
                                                     <button
@@ -214,7 +237,7 @@ function MyOrders() {
                                 <p>
                                     <strong>Address:</strong> {selectedOrder.address}
                                 </p>
-                         
+
                             </>
                         )}
                     </DialogContent>
@@ -222,7 +245,7 @@ function MyOrders() {
                         <Button onClick={handleCloseDetailModal} color="secondary" variant="outlined">
                             Close
                         </Button>
-                      
+
                     </DialogActions>
                 </Dialog>
 

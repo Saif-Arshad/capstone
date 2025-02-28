@@ -97,7 +97,7 @@ function Index() {
                     </div>
                     <div className="flex flex-col lg:flex-row mt-8 text-white font-bold gap-6">
                         <Link
-                            href="/custom"
+                            to="/custom"
                             className="bg-[#ff4d30] flex items-center gap-2 justify-center py-4 px-4 lg:px-8 shadow-orange-bottom hover:shadow-orange-bottom-hov transition-all duration-300 ease-linear rounded border-2 border-custom-orange"
                         >
                             <span>Explore Customizations</span>

@@ -11,6 +11,7 @@ model User {
   id        String   @id @default(uuid())
   fullName  String
   email     String   @unique
+  customer  String?
   password  String
   role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
@@ -50,16 +51,18 @@ model Image {
 }
 
 model Order {
-  id         String      @id @default(uuid())
-  userId     String
-  country    String
-  city       String
-  address    String
-  items      Json
-  totalPrice Float
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(uuid())
+  userId      String
+  customerId  String?
+  paymentType String?
+  country     String
+  city        String
+  address     String
+  items       Json
+  totalPrice  Float
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 enum Role {

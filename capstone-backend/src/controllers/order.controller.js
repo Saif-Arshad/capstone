@@ -51,7 +51,7 @@ exports.getMyOrders = async (req, res) => {
     const userId = req.user.id;
     try {
         const orders = await prisma.order.findMany({
-            where:{
+            where: {
                 userId
             }
         });
@@ -63,7 +63,7 @@ exports.getMyOrders = async (req, res) => {
 };
 exports.createOrder = async (req, res) => {
     try {
-        const { items, totalPrice, status, city, country, address } = req.body;
+        const { items, totalPrice, status, city, country, address, customerId, paymentMethod } = req.body;
 
         // const productIds = Object.keys(items);
 
@@ -89,6 +89,8 @@ exports.createOrder = async (req, res) => {
             items: items,
             totalPrice,
             country,
+            customerId,
+            paymentType: paymentMethod,
             address,
             city,
             ...(status && { status }),

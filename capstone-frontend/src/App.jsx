@@ -20,6 +20,7 @@ import MyOrders from './components/MyOrders';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Brands from './components/Admin/Brands';
+import Customers from './components/Garage/Customers';
 
 function App() {
   const location = useLocation();
@@ -44,6 +45,7 @@ function App() {
         <Route path="/dashboard/products" element={<AdminProducts />} />
         <Route path="/dashboard/my-products" element={<MyProducts />} />
         <Route path="/dashboard/orders" element={<Orders />} />
+        <Route path="/dashboard/my-customers" element={<Customers />} />
         <Route path="/dashboard/my-orders" element={<MyOrders />} />
         <Route path="/dashboard/cart" element={<Cart />} />
         <Route path="/:id" element={<ProductMainDetail />} />

@@ -8,6 +8,55 @@ const prisma = new PrismaClient();
 
 
 
+exports.createUser = async (req, res) => {
+const ownerId = req.user.id
+    try {
+        const { fullName, email, password } = req.body;
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await prisma.user.create({
+            data: {
+                fullName,
+                email,
+                password: hashedPassword,
+                role: "CUSTOMER",
+                customer: ownerId
+            },
+        });
+
+        return res.status(201).json({
+            message: "User created successfully",
+            data: newUser,
+        });
+    } catch (error) {
+        console.error("Create User Error:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+};
+
+exports.getUsers = async (req, res) => {
+    const ownerId = req.user.id
+
+    try {
+        const users = await prisma.user.findMany({
+            where:{
+                customer: ownerId
+            }
+        });
+        return res.status(200).json({ data: users });
+    } catch (error) {
+        console.error("Get Users Error:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+};
+
+
 exports.createProduct = async (req, res) => {
     const garageId = req.user.id
     console.log("🚀 ~ exports.createProduct= ~ garageId:", garageId)
