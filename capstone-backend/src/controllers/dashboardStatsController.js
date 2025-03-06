@@ -5,16 +5,18 @@ exports.getAdminDashboardStats = async (req, res) => {
   try {
     const orders = await prisma.order.findMany();
 
+    // Monthly revenue calculation
     const monthlyRevenueMap = {};
     orders.forEach((order) => {
       const date = new Date(order.createdAt);
-      const key = `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}`; // YYYY-MM
+      const key = `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}`;
       monthlyRevenueMap[key] = (monthlyRevenueMap[key] || 0) + order.totalPrice;
     });
     const monthlyRevenue = Object.entries(monthlyRevenueMap)
       .map(([month, revenue]) => ({ month, revenue }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
+    // Order status distribution
     const statusCounts = {};
     orders.forEach((order) => {
       const status = order.status;
@@ -24,7 +26,12 @@ exports.getAdminDashboardStats = async (req, res) => {
       ([status, count]) => ({ status, count })
     );
 
-    const productSales = {}; // { productId: totalQuantity }
+    // Overall statistics
+    let totalRevenue = 0;
+    let totalProfit = 0;
+    let totalQuantity = 0;
+    const productSales = {};
+
     orders.forEach((order) => {
       let items = order.items;
       if (typeof items === "string") {
@@ -35,33 +42,49 @@ exports.getAdminDashboardStats = async (req, res) => {
         }
       }
       items.forEach((item) => {
-        const { productId, quantity } = item;
-        productSales[productId] = (productSales[productId] || 0) + quantity;
+        totalRevenue += item.totalPrice;
+        totalProfit += item.totalPrice * 0.1;
+        totalQuantity += item.quantity;
+        productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
       });
     });
+
+    const distinctProductsCount = Object.keys(productSales).length;
+    const averageSalesPerItem = distinctProductsCount > 0
+      ? totalQuantity / distinctProductsCount
+      : 0;
+
+    // Most selling products
     const sortedSales = Object.entries(productSales)
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
       .slice(0, 5)
       .map(([productId, quantity]) => ({ productId, quantity }));
-    // Fetch product names for these top products
+
     const topProductIds = sortedSales.map((item) => item.productId);
     const productsData = await prisma.products.findMany({
       where: { id: { in: topProductIds } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, price: true },
     });
+
     const mostSellingProducts = sortedSales.map((item) => {
       const prod = productsData.find((p) => p.id === item.productId);
       return {
         productId: item.productId,
         name: prod ? prod.name : "Unknown",
         quantity: item.quantity,
+        price: prod ? prod.price : 0
       };
     });
 
     return res.json({
-      monthlyRevenue, // Chart 1
-      orderStatusDistribution, // Chart 2
-      mostSellingProducts, // Chart 3
+      monthlyRevenue,
+      orderStatusDistribution,
+      mostSellingProducts,
+      averageSalesPerItem,
+      totalRevenue,
+      profit: totalProfit,
+      totalQuantity,
+      distinctProductsCount
     });
   } catch (error) {
     console.error("Error fetching admin dashboard stats:", error);

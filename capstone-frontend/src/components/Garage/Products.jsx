@@ -366,7 +366,7 @@ function MyProducts() {
     };
 
     // ------------------ PREMADE COLORS ------------------
-    const availableColors = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Purple'];
+    const availableColors = ['Carbon fibre', 'Forged carbon fibre ','Metallic black ','Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Purple'];
 
     // ------------------ RENDER ------------------
     return (

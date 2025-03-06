@@ -23,9 +23,11 @@ defaults.maintainAspectRatio = false;
 defaults.responsive = true;
 
 // Define your custom color palette
-const carbonFibre = "#343a40"; // dark gray
-const forgedCarbonFibre = "#495057"; // medium dark gray
-const metallicBlack = "#212529"; // almost black
+const pink = "#fa8397";
+const green = "#6ae56a";
+const yellow = "#e7e75f";
+const lightBlue = "#ADD8E6";
+const customColors = [pink, green, yellow, lightBlue];
 
 function Dashboard() {
   const role = localStorage.getItem("user-role");
@@ -33,6 +35,7 @@ function Dashboard() {
   const token = localStorage.getItem("token");
 
   const [dashboardData, setDashboardData] = useState(null);
+  console.log("🚀 ~ Dashboard ~ dashboardData:", dashboardData)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -87,10 +90,7 @@ function Dashboard() {
             ? dashboardData.monthlyRevenue.map((item) => item.revenue)
             : [],
           backgroundColor: dashboardData.monthlyRevenue
-            ? dashboardData.monthlyRevenue.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.monthlyRevenue.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -107,10 +107,7 @@ function Dashboard() {
             ? dashboardData.orderStatusDistribution.map((item) => item.count)
             : [],
           backgroundColor: dashboardData.orderStatusDistribution
-            ? dashboardData.orderStatusDistribution.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.orderStatusDistribution.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -127,10 +124,7 @@ function Dashboard() {
             ? dashboardData.mostSellingProducts.map((item) => item.quantity)
             : [],
           backgroundColor: dashboardData.mostSellingProducts
-            ? dashboardData.mostSellingProducts.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.mostSellingProducts.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -151,10 +145,7 @@ function Dashboard() {
             ? dashboardData.monthlyOrders.map((item) => item.count)
             : [],
           backgroundColor: dashboardData.monthlyOrders
-            ? dashboardData.monthlyOrders.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.monthlyOrders.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -171,10 +162,7 @@ function Dashboard() {
             ? dashboardData.mostBoughtProducts.map((item) => item.quantity)
             : [],
           backgroundColor: dashboardData.mostBoughtProducts
-            ? dashboardData.mostBoughtProducts.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.mostBoughtProducts.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -191,10 +179,7 @@ function Dashboard() {
             ? dashboardData.customerDistribution.map((item) => item.count)
             : [],
           backgroundColor: dashboardData.customerDistribution
-            ? dashboardData.customerDistribution.map((_, idx) => {
-              const colors = [carbonFibre, forgedCarbonFibre, metallicBlack];
-              return colors[idx % 3];
-            })
+            ? dashboardData.customerDistribution.map((_, idx) => customColors[idx % customColors.length])
             : [],
         },
       ],
@@ -204,7 +189,7 @@ function Dashboard() {
   return (
     <Layout>
       <div className="container mx-auto px-4 my-8">
-        <div className="bg-gradient-to-br from-white to-gray-100 flex flex-col items-center justify-center p-8 rounded-xl shadow-lg">
+        <div className=" flex flex-col items-center justify-center p-8 rounded-xl">
           <div className="transform hover:scale-105 mb-10 transition-transform duration-300">
             <Link to="/">
               <img
@@ -229,8 +214,8 @@ function Dashboard() {
             <>
               {/* Existing Cards Section */}
               {(userRole === "SUPPLIER" || userRole === "ADMIN") && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full pt-20">
-                  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-8 w-full pt-20">
+                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
                     <h2 className="text-xl font-bold mb-3 text-gray-800">
                       Average Sales Per Item
                     </h2>
@@ -240,18 +225,28 @@ function Dashboard() {
                         : "0.00"}
                     </p>
                   </div>
-                  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <h2 className="text-xl font-bold mb-3 text-gray-800">
+                          Total Revenue
+                    </h2>
+                    <p className="text-4xl text-blue-600 font-semibold">
+                          {dashboardData.totalRevenue
+                            ? Number(dashboardData.totalRevenue).toFixed(2)
+                        : "0.00"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
                     <h2 className="text-xl font-bold mb-3 text-gray-800">
                       Net Profit
                     </h2>
                     <p className="text-4xl text-green-600 font-semibold">
-                      {dashboardData.netProfit != null
-                        ? Number(dashboardData.netProfit).toFixed(2)
+                          {dashboardData.profit != null
+                            ? Number(dashboardData.profit).toFixed(2)
                         : "0.00"}{" "}
                       AED
                     </p>
                   </div>
-                  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
                     <h2 className="text-xl font-bold mb-3 text-gray-800">
                       Most Selling Products
                     </h2>
@@ -276,7 +271,7 @@ function Dashboard() {
               )}
               {userRole === "GARAGE" && (
                 <div className="w-full pb-20 gap-8">
-                  <div className="bg-white p-6 rounded-xl shadow-md">
+                  <div className="bg-gray-50 p-6 rounded-xl shadow-md">
                     <h2 className="text-xl font-bold text-start mb-6 text-gray-800">
                       Most Bought Products
                     </h2>
@@ -300,69 +295,7 @@ function Dashboard() {
                         ))}
                     </ul>
                   </div>
-                  <div className="overflow-x-auto">
-                    <h2 className="text-xl font-bold mb-6 text-gray-800">
-                      Customer History
-                    </h2>
-                    <table className="min-w-full bg-white">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Order ID
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Payment
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Shipping Details
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {dashboardData.customerHistory &&
-                          dashboardData.customerHistory.map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                #{order.id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span
-                                  className={`px-2 py-1 text-xs font-semibold rounded-full ${order.status === "PENDING"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : order.status === "COMPLETED"
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-gray-100 text-gray-800"
-                                    }`}
-                                >
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                                {order.totalPrice} AED
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.paymentType.toUpperCase()}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-500">
-                                {`${order.address}, ${order.city}, ${order.country}`}
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
+                
                 </div>
               )}
 
@@ -370,7 +303,7 @@ function Dashboard() {
               {(userRole === "SUPPLIER" || userRole === "ADMIN") && dashboardData.monthlyRevenue && (
                 <div className="pt-12 w-full">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    <div className="bg-white p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Monthly Revenue
                       </h3>
@@ -382,7 +315,7 @@ function Dashboard() {
                         }}
                       />
                     </div>
-                    <div className="bg-white p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Order Status Distribution
                       </h3>
@@ -394,7 +327,7 @@ function Dashboard() {
                         }}
                       />
                     </div>
-                    <div className="bg-white xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Most Selling Products
                       </h3>
@@ -413,7 +346,7 @@ function Dashboard() {
               {userRole === "GARAGE" && dashboardData.monthlyOrders && (
                 <div className="mt-12 w-full">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    <div className="bg-white p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Monthly Orders
                       </h3>
@@ -425,7 +358,7 @@ function Dashboard() {
                         }}
                       />
                     </div>
-                    <div className="bg-white p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Customer Distribution
                       </h3>
@@ -437,7 +370,7 @@ function Dashboard() {
                         }}
                       />
                     </div>
-                    <div className="bg-white xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
+                    <div className="bg-gray-50 xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
                       <h3 className="text-xl font-semibold mb-4 text-gray-700">
                         Most Bought Products
                       </h3>

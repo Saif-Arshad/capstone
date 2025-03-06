@@ -73,11 +73,14 @@ export default function Header() {
                 <div className="flex items-center gap-4 font-medium">
                     {token ? (
                         <>
+                            {
+                                (userRole == "CUSTOMER" || userRole =="GARAGE") &&
                             <Link to="/dashboard/cart">
                                 <Badge badgeContent={Object.keys(dataItems).length} color="warning">
                                     <BsBasket size={22} />
                                 </Badge>
                             </Link>
+                            }
                             <IconButton
                                 onClick={handleAvatarClick}
                                 sx={{
