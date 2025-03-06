@@ -8,7 +8,7 @@ router.get("/users", admincontrollers.getUsers);
 router.get("/users/:id", admincontrollers.getUserById);
 router.put("/users/:id", admincontrollers.updateUser);
 router.delete("/users/:id", admincontrollers.deleteUser);
-
+router.get('/dashboard', admincontrollers.getDashboardStats);
 router.post("/products", admincontrollers.createProduct);
 router.get("/products", admincontrollers.getAllProducts);
 router.get("/products/:id", admincontrollers.getProductById);

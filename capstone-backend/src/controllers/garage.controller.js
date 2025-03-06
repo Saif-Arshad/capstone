@@ -179,3 +179,68 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+
+exports.getGarageDashboardStats = async (req, res) => {
+    try {
+        const garageId = req.user.id;
+
+        const orders = await prisma.order.findMany({
+            where: { userId: garageId },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Aggregate product sales across orders
+        const productSales = {}; // { productId: totalQuantitySold }
+        orders.forEach(order => {
+            let items = order.items;
+            // If items are stored as a JSON string, parse them
+            if (typeof items === 'string') {
+                try {
+                    items = JSON.parse(items);
+                } catch (error) {
+                    items = [];
+                }
+            }
+            // items format: [{ productId, name, category, price, totalPrice, quantity }, ... ]
+            items.forEach(item => {
+                if (!productSales[item.productId]) {
+                    productSales[item.productId] = 0;
+                }
+                productSales[item.productId] += item.quantity;
+            });
+        });
+
+        // Determine the top 5 most bought products
+        const sortedSales = Object.entries(productSales)
+            .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
+            .slice(0, 5)
+            .map(([productId, quantity]) => ({ productId, quantity }));
+
+        // Fetch basic details for these products from the products table
+        const productIds = sortedSales.map(item => item.productId);
+        const productDetails = await prisma.products.findMany({
+            where: { id: { in: productIds } },
+            select: { id: true, name: true, price: true }
+        });
+
+        // Merge aggregated data with product details
+        const mostBoughtProducts = sortedSales.map(item => {
+            const detail = productDetails.find(p => p.id === item.productId);
+            return {
+                productId: item.productId,
+                quantity: item.quantity,
+                name: detail ? detail.name : 'Unknown',
+                price: detail ? detail.price : 0
+            };
+        });
+        const customerHistory = orders.filter(order => order.customerId);
+
+        return res.json({
+            mostBoughtProducts,
+            customerHistory
+        });
+    } catch (error) {
+        console.error('Error fetching garage dashboard stats:', error);
+        return res.status(500).json({ error: 'Error fetching garage dashboard stats' });
+    }
+};

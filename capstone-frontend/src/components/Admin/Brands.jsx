@@ -168,6 +168,14 @@ function Brands() {
     // ------------------ SUBMIT BRAND ------------------
     const handleSubmit = async () => {
         // If a new file was selected, upload it first.
+        const newBrandNameLower = formData.name.trim().toLowerCase();
+        const duplicate = brands.find(b => b.name.trim().toLowerCase() === newBrandNameLower);
+        // In edit mode, allow if it's the same brand being edited.
+        if (duplicate && (!isEdit || (isEdit && duplicate.id !== selectedBrand.id))) {
+            toast.error('Brand already exists');
+            return;
+        }
+
         let imageURL = formData.image;
         if (selectedFile) {
             try {

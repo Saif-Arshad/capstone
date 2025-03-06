@@ -237,3 +237,71 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+
+exports.getDashboardStats = async (req, res) => {
+    try {
+        const orders = await prisma.order.findMany();
+
+        let totalRevenue = 0;
+        let totalQuantity = 0;
+        const productSales = {};
+
+        orders.forEach(order => {
+            let items = order.items;
+            if (typeof items === 'string') {
+                try {
+                    items = JSON.parse(items);
+                } catch (err) {
+                    items = [];
+                }
+            }
+
+            items.forEach(item => {
+                totalRevenue += item.totalPrice;
+                totalQuantity += item.quantity;
+                if (!productSales[item.productId]) {
+                    productSales[item.productId] = 0;
+                }
+                productSales[item.productId] += item.quantity;
+            });
+        });
+
+        const distinctProductsCount = Object.keys(productSales).length;
+        const averageSalesPerItem = distinctProductsCount > 0
+            ? totalQuantity / distinctProductsCount
+            : 0;
+
+        const netProfit = totalRevenue;
+
+        const sortedSales = Object.entries(productSales)
+            .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
+            .slice(0, 5)
+            .map(([productId, quantity]) => ({ productId, quantity }));
+
+        const productIds = sortedSales.map(item => item.productId);
+        const productsData = await prisma.products.findMany({
+            where: { id: { in: productIds } },
+            select: { id: true, name: true, price: true }
+        });
+
+        const mostSellingProducts = sortedSales.map(item => {
+            const productDetail = productsData.find(p => p.id === item.productId);
+            return {
+                productId: item.productId,
+                quantity: item.quantity,
+                name: productDetail ? productDetail.name : 'Unknown',
+                price: productDetail ? productDetail.price : 0
+            };
+        });
+
+        return res.json({
+            averageSalesPerItem,
+            netProfit,
+            mostSellingProducts
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        return res.status(500).json({ error: 'Error fetching dashboard stats' });
+    }
+};
+

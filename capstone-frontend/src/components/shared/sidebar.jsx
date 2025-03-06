@@ -24,7 +24,6 @@ const Sidebar = () => {
     const userRole = role.replace(/"/g, "");
 
     const customerLinks = [
-        { Name: "Dashboard", Link: "/dashboard" },
         { Name: "My Orders", Link: "/dashboard/my-orders" },
         { Name: "My Cart", Link: "/dashboard/cart" },
     ];
@@ -46,7 +45,6 @@ const Sidebar = () => {
         { Name: "Dashboard", Link: "/dashboard" },
         { Name: "Manage Users", Link: "/dashboard/users" },
         { Name: "Manage Brands", Link: "/dashboard/brands" },
-        { Name: "Manage Products", Link: "/dashboard/products" },
         { Name: "Manage Orders", Link: "/dashboard/orders" },
     ];
 

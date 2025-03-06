@@ -12,5 +12,6 @@ router.get("/products", verifySupplierToken, garagecontrollers.getProducts);
 router.get("/products/:id", garagecontrollers.getProductById);
 router.put("/products/:id", garagecontrollers.updateProduct);
 router.delete("/products/:id", garagecontrollers.deleteProduct);
+router.get('/dashboard', verifyGarageToken, garagecontrollers.getGarageDashboardStats);
 
 module.exports = router;

@@ -13,7 +13,9 @@ export default function Header() {
     const [anchorEl, setAnchorEl] = useState(null);
 
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user-automobile")); // Retrieve user info
+    const user = JSON.parse(localStorage.getItem("user-automobile")); 
+    const role = localStorage.getItem("user-role");
+    const userRole = role && role.replace(/"/g, "");
 
     const isActive = (url) => location.pathname === url;
 
@@ -117,6 +119,21 @@ export default function Header() {
                                 </MenuItem>
 
                                 <Divider />
+                                {
+                                    userRole =="CUSTOMER" ?
+
+                                        <Link to={"/dashboard/my-orders"}>
+                                    <MenuItem
+                                        sx={{
+                                            fontSize: "16px",
+                                            color: "#ff4d30",
+                                            "&:hover": { backgroundColor: "rgba(255, 77, 48, 0.1)" },
+                                        }}
+                                    >
+                                        Your Orders
+                                    </MenuItem>
+                                </Link>
+                                :
                                 <Link to={"/dashboard"}>
                                     <MenuItem
                                         sx={{
@@ -128,6 +145,8 @@ export default function Header() {
                                         Your Dashboard
                                     </MenuItem>
                                 </Link>
+
+                                }
                                 <MenuItem
                                     onClick={handleLogout}
                                     sx={{
