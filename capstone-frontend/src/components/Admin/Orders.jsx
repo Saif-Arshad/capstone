@@ -27,7 +27,11 @@ function Orders() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const role = localStorage.getItem("user-role");
 
+  const userRole = role.replace(/"/g, "");
+
+  const isSupplier = userRole =="SUPPLIER"
   // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -259,6 +263,8 @@ function Orders() {
                 <p>
                   <strong>Address:</strong> {selectedOrder.address}
                 </p>
+                {
+                  isSupplier &&
                 <FormControl fullWidth>
                   <InputLabel id="order-status-label">Update Status</InputLabel>
                   <Select
@@ -275,6 +281,7 @@ function Orders() {
                     ))}
                   </Select>
                 </FormControl>
+                }
               </>
             )}
           </DialogContent>
@@ -282,9 +289,12 @@ function Orders() {
             <Button onClick={handleCloseDetailModal} color="secondary" variant="outlined">
               Close
             </Button>
+            {
+              isSupplier &&
             <Button onClick={handleUpdateStatus} color="primary" variant="contained">
               Update Status
             </Button>
+            }
           </DialogActions>
         </Dialog>
 

@@ -31,6 +31,7 @@ const Sidebar = () => {
     const suplierLinks = [
         { Name: "Dashboard", Link: "/dashboard" },
         { Name: "Manage Products", Link: "/dashboard/my-products" },
+        { Name: "Manage Orders", Link: "/dashboard/orders" },
 
     ];
     const garageLinks = [
@@ -45,7 +46,7 @@ const Sidebar = () => {
         { Name: "Dashboard", Link: "/dashboard" },
         { Name: "Manage Users", Link: "/dashboard/users" },
         { Name: "Manage Brands", Link: "/dashboard/brands" },
-        { Name: "Manage Orders", Link: "/dashboard/orders" },
+        { Name: "View Orders", Link: "/dashboard/orders" },
     ];
 
     let userLinks = [];
