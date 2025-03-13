@@ -68,62 +68,25 @@ function Index() {
 
     return (
         <>
-            <section className="px-8 lg:px-28 py-12 lg:py-0 mt-20 lg:mt-0 h-screen flex items-center relative" id="hero">
-                <img
-                    src={backgroundImage}
-                    alt="hero"
-                    width={680}
-                    height={870}
-                    className="absolute inset-y-0 right-0 -z-10 hidden lg:inline-block"
-                />
-                <img
-                    src={carImage}
-                    alt="hero"
-                    width={800}
-                    height={450}
-                    className="absolute right-0 hidden lg:inline-block"
-                />
-                <div className="space-y-8 text-center lg:text-left lg:max-w-lg">
-                    <div className="font-bold space-y-2">
-                        <h3 className="lg:text-xl text-lg">Customize Your Automobile</h3>
-                        <h1 className="text-4xl sm:text-[3.2rem] leading-tight">
-                            Customize Your <span className="text-[#ff4d30]">Ride</span>, Your Way!
-                        </h1>
-                    </div>
-                    <div>
-                        <p className="text-custom-grey mb-10">
-                            Experience the future of automobile customization with our 3D visualization platform. Browse, personalize, and order auto parts effortlessly
-                        </p>
-                    </div>
-                    <div className="flex flex-col lg:flex-row mt-8 text-white font-bold gap-6">
-                        <Link
-                            to="/custom"
-                            className="bg-[#ff4d30] flex items-center gap-2 justify-center py-4 px-4 lg:px-8 shadow-orange-bottom hover:shadow-orange-bottom-hov transition-all duration-300 ease-linear rounded border-2 border-custom-orange"
-                        >
-                            <span>Explore Customizations</span>
-                            <span className="text-xl">
-                                <AiFillCheckCircle />
-                            </span>
-                        </Link>
-                        <Link
-                            to="/products"
-                            className="bg-black flex items-center gap-2 justify-center py-4 px-4 lg:px-8 transition-all duration-300 ease-linear hover:bg-transparent hover:text-black rounded border-2 border-black"
-                        >
-                            <span>Shop Now</span>
-                            <span className="text-xl">
-                                <IoIosArrowForward />
-                            </span>
-                        </Link>
-                    </div>
-                </div>
-                <span
-                    className="absolute bottom-16 inset-x-1/2 text-3xl animate-bounce"
-                    aria-label="View Models"
-                >
-                    <IoIosArrowDown />
-                </span>
+            <section className="px-8 flex-col lg:px-28  py-20 min-h-screen flex relative" id="hero">
+                <div className="grid grid-cols-1 pt-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+                    {
+                        brands?.map((item, index) => (
+                            <div key={index} className="  w-full flex flex-col p-4 rounded-2xl ">
+                                <Link to={`/products/${item.slug}`} >
+                                    <div className="w-full h-52 cursor-pointer relative mb-4">
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                    </div>
+                                </Link>
+                            </div>
+                        ))
+                    }
 
+                </div>
+             
             </section>
+
+          
 
 
             <section id="choose">
@@ -190,14 +153,69 @@ function Index() {
                     </div>
                 </div>
             </section>
+            <section className="px-8 lg:px-28 py-12 lg:py-0 mt-20 lg:mt-0 h-screen flex items-center relative" id="hero">
+                <img
+                    src={backgroundImage}
+                    alt="hero"
+                    width={680}
+                    height={870}
+                    className="absolute inset-y-0 right-0 -z-10 hidden lg:inline-block"
+                />
+                <img
+                    src={carImage}
+                    alt="hero"
+                    width={800}
+                    height={450}
+                    className="absolute right-0 hidden lg:inline-block"
+                />
+                <div className="space-y-8 text-center lg:text-left lg:max-w-lg">
+                    <div className="font-bold space-y-2">
+                        <h3 className="lg:text-xl text-lg">Customize Your Automobile</h3>
+                        <h1 className="text-4xl sm:text-[3.2rem] leading-tight">
+                            Customize Your <span className="text-[#ff4d30]">Ride</span>, Your Way!
+                        </h1>
+                    </div>
+                    <div>
+                        <p className="text-custom-grey mb-10">
+                            Experience the future of automobile customization with our 3D visualization platform. Browse, personalize, and order auto parts effortlessly
+                        </p>
+                    </div>
+                    <div className="flex flex-col lg:flex-row mt-8 text-white font-bold gap-6">
+                        <Link
+                            to="/custom"
+                            className="bg-[#ff4d30] flex items-center gap-2 justify-center py-4 px-4 lg:px-8 shadow-orange-bottom hover:shadow-orange-bottom-hov transition-all duration-300 ease-linear rounded border-2 border-custom-orange"
+                        >
+                            <span>Explore Customizations</span>
+                            <span className="text-xl">
+                                <AiFillCheckCircle />
+                            </span>
+                        </Link>
+                        <Link
+                            to="/products"
+                            className="bg-black flex items-center gap-2 justify-center py-4 px-4 lg:px-8 transition-all duration-300 ease-linear hover:bg-transparent hover:text-black rounded border-2 border-black"
+                        >
+                            <span>Shop Now</span>
+                            <span className="text-xl">
+                                <IoIosArrowForward />
+                            </span>
+                        </Link>
+                    </div>
+                </div>
+                <span
+                    className="absolute bottom-16 inset-x-1/2 text-3xl animate-bounce"
+                    aria-label="View Models"
+                >
+                    <IoIosArrowDown />
+                </span>
 
+            </section>
             <section className="px-8 flex-col lg:px-28 py-12 lg:py-0 my-20 lg:mt-0 min-h-screen flex relative" id="hero">
 
                 <h2 className="text-2xl md:text-4xl text-start font-bold mb-6">
                     Explore, Customize and Purchase <br /> the automobile parts
                 </h2>
                 <div className="grid grid-cols-1 pt-20 md:grid-cols-2 gap-5 lg:grid-cols-3 ">
-                    {products.length>0 && products.slice(0, 3).map((product) => (
+                    {products.length > 0 && products.slice(0, 3).map((product) => (
                         <div key={product.id} className="w-full group bg-white shadow-lg rounded-xl overflow-hidden transform transition-transform duration-300 ">
                             <div className="relative ">
                                 {product.images && product.images.length > 0 && (
@@ -235,33 +253,6 @@ function Index() {
                         </div>
                     ))}
                 </div>
-            </section>
-            <section className="px-8 flex-col lg:px-28 py-12 lg:py-0 mt-20 lg:mt-0 min-h-screen flex relative" id="hero">
-
-
-                <h2 className="text-2xl md:text-4xl text-start font-bold">Explore And Purchase
-                    the
-                    <br />
-                    Automobile parts</h2>
-                <div className="grid grid-cols-1 pt-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {
-                        brands?.map((item, index) => (
-                            <div key={index} className="  w-full flex flex-col p-4 rounded-2xl ">
-                                <Link to={`/products/${item.slug}`} >
-                                    <div className="w-full h-52 cursor-pointer relative mb-4">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                                    </div>
-                                </Link>
-                            </div>
-                        ))
-                    }
-
-                </div>
-                <Link to="/products">
-                    <button className="my-20 w-full  md:w-[500px] mx-auto cursor-pointer bg-[#ff4d30] text-white py-2 rounded-md text-lg font-semibold hover:bg-[#ff3d20] transition">
-                        View Products
-                    </button>
-                </Link>
             </section>
 
         </>
