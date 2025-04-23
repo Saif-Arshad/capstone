@@ -21,6 +21,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Brands from './components/Admin/Brands';
 import Customers from './components/Garage/Customers';
+import Vehicle from './components/Vehicle';
 
 function App() {
   const location = useLocation();
@@ -36,6 +37,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/custom" element={<Customization />} />
+        <Route path="/customs" element={<Vehicle />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<Catrgory />} />

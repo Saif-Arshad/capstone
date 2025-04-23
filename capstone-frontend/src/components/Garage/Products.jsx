@@ -366,7 +366,7 @@ function MyProducts() {
     };
 
     // ------------------ PREMADE COLORS ------------------
-    const availableColors = ['Carbon fibre', 'Forged carbon fibre ','Metallic black ','Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Purple'];
+    const availableColors = ['Carbon Fibre', 'Forged Carbon Fibre ','Metallic black ','Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Purple', 'GunMetal Grey', 'Bronze', 'Brown', 'Unpainted'];
 
     // ------------------ RENDER ------------------
     return (

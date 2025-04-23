@@ -206,26 +206,26 @@ function CheckoutForm() {
     };
 
     return (
-        <section className="bg-white py-8 antialiased dark:bg-gray-900 pt-32">
+        <section className="bg-white py-8 antialiased  pt-32">
             <form onSubmit={handleSubmit} className="mx-auto grid gap-10 grid-cols-1 xl:grid-cols-3 max-w-screen-xl px-4 2xl:px-0">
                 <div className="xl:row-span-2 xl:col-span-2 space-y-4">
                     <div className="pb-5">
-                        <h2 className="text-xl font-semibold text-start text-gray-900 dark:text-white">Order Details</h2>
-                        <p className="text-sm text-start font-normal text-gray-500 dark:text-gray-400">
+                        <h2 className="text-xl font-semibold text-start text-gray-900 ">Order Details</h2>
+                        <p className="text-sm text-start font-normal text-gray-500 ">
                             Note: We offer Cash on Delivery by default. You can select Card Payment if preferred.
                         </p>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className='text-start'>
 
-                            <label htmlFor="country" className="block text-sm font-medium text-gray-900 dark:text-white">Country*</label>
+                            <label htmlFor="country" className="block text-sm font-medium text-gray-900 ">Country*</label>
                             <input
                                 type="text"
                                 id="country"
                                 value={country}
                                 onChange={(e) => setCountry(e.target.value)}
                                 onBlur={handleCountryBlur}
-                                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500  dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                             />
                             {errors.country && <div className="text-red-500 text-sm mt-1">{errors.country}</div>}
                         </div>
