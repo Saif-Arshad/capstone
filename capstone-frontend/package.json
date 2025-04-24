@@ -26,6 +26,7 @@
     "card-validator": "^10.0.2",
     "chart.js": "^4.4.8",
     "formik": "^2.4.6",
+    "framer-motion": "^12.8.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@faker-js/faker": "^9.7.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",

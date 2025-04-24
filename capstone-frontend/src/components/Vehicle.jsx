@@ -18,34 +18,6 @@ const products = [
         },
     },
     {
-        id: 2,
-        name: "Nissan 3070z Nismo",
-        description: "Performance-tuned Nismo fender for the Nissan 3070z, blending aesthetics and durability.",
-        price: 200,
-        variants: {
-            type: "wheels",
-            options: [
-                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/black/${i + 1}.png`) },
-                { name: "Brown", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/brown/${i + 1}.png`) },
-                { name: "White", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/white/${i + 1}.png`) },
-            ],
-        },
-    },
-    {
-        id: 3,
-        name: "Nissan 3070z TE3 Black",
-        description: "Sleek TE3 Black wheel set for the Nissan 3070z, engineered for performance and elegance.",
-        price: 200,
-        variants: {
-            type: "wheels",
-            options: [
-                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/black-wheel/${i + 1}.png`) },
-                { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/bronze-whel/${i + 1}.png`) },
-                { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/gun-wheel/${i + 1}.png`) },
-            ],
-        },
-    },
-    {
         id: 4,
         name: "Nissan 3070z TE3 Brown",
         description: "Stylish TE3 Brown wheel set for the Nissan 3070z, perfect for a custom look.",
@@ -59,16 +31,16 @@ const products = [
         },
     },
     {
-        id: 5,
-        name: "Nissan 3070z TE3 White",
-        description: "Elegant TE3 White wheel set for the Nissan 3070z, combining form and function.",
+        id: 2,
+        name: "Nissan 3070z Nismo",
+        description: "Performance-tuned Nismo fender for the Nissan 3070z, blending aesthetics and durability.",
         price: 200,
         variants: {
             type: "wheels",
             options: [
-                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/black-wheel/${i + 1}.png`) },
-                { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/bronze-wheel/${i + 1}.png`) },
-                { name: "Grau", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/gray-wheel/${i + 1}.png`) },
+                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/black/${i + 1}.png`) },
+                { name: "Brown", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/brown/${i + 1}.png`) },
+                { name: "White", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/white/${i + 1}.png`) },
             ],
         },
     },
@@ -86,6 +58,36 @@ const products = [
             ],
         },
     },
+    {
+        id: 3,
+        name: "Nissan 3070z TE3 Black",
+        description: "Sleek TE3 Black wheel set for the Nissan 3070z, engineered for performance and elegance.",
+        price: 200,
+        variants: {
+            type: "wheels",
+            options: [
+                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/black-wheel/${i + 1}.png`) },
+                { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/bronze-whel/${i + 1}.png`) },
+                { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/gun-wheel/${i + 1}.png`) },
+            ],
+        },
+    },
+
+    {
+        id: 5,
+        name: "Nissan 3070z TE3 White",
+        description: "Elegant TE3 White wheel set for the Nissan 3070z, combining form and function.",
+        price: 200,
+        variants: {
+            type: "wheels",
+            options: [
+                { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/black-wheel/${i + 1}.png`) },
+                { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/bronze-wheel/${i + 1}.png`) },
+                { name: "Grau", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/white/gray-wheel/${i + 1}.png`) },
+            ],
+        },
+    },
+
     {
         id: 7,
         name: "Subaru 3070z Wing",

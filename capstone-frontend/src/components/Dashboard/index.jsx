@@ -1,58 +1,70 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../shared/Layout";
 import logo from "/Screenshot_3.png";
-import { Bar, Pie } from "react-chartjs-2";
+import {
+  Bar,
+  Pie,
+  Line,
+} from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
 } from "chart.js";
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
-// Set global chart defaults
 import { defaults } from "chart.js/auto";
 defaults.maintainAspectRatio = false;
 defaults.responsive = true;
 
-// Define your custom color palette
-const pink = "#fa8397";
-const green = "#6ae56a";
-const yellow = "#e7e75f";
-const lightBlue = "#ADD8E6";
-const customColors = [pink, green, yellow, lightBlue];
+// Tailwind-friendly palette
+const palette = [
+  "#fa8397",
+  "#6ae56a",
+  "#e7e75f",
+  "#8cc4ff",
+  "#ffa08c",
+  "#bb86fc",
+  "#ffcc80",
+];
 
-function Dashboard() {
-  const role = localStorage.getItem("user-role");
-  const userRole = role ? role.replace(/"/g, "") : "";
-  const token = localStorage.getItem("token");
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05 },
+  }),
+};
 
-  const [dashboardData, setDashboardData] = useState(null);
-  console.log("🚀 ~ Dashboard ~ dashboardData:", dashboardData)
+function useDashboardData(endpoint, token) {
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Determine API endpoint based on role
-  const endpoint =
-    userRole === "GARAGE"
-      ? `${import.meta.env.VITE_BACKEND_URL}/api/dashboard/garage/dashboard/stats`
-      : userRole === "SUPPLIER" || userRole === "ADMIN"
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/dashboard/admin/dashboard/stats`
-        : null;
-
   useEffect(() => {
-    if (!endpoint) {
-      setLoading(false);
-      return;
-    }
-    const fetchDashboard = async () => {
+    if (!endpoint) return;
+    (async () => {
       setLoading(true);
       try {
         const res = await fetch(endpoint, {
@@ -61,337 +73,277 @@ function Dashboard() {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!res.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
-        const data = await res.json();
-        setDashboardData(data);
+        if (!res.ok) throw new Error("Failed to fetch dashboard data");
+        const json = await res.json();
+        setData(json);
       } catch (err) {
-        console.error(err);
         setError(err.message || "Error fetching dashboard data");
       } finally {
         setLoading(false);
       }
-    };
-    fetchDashboard();
+    })();
   }, [endpoint, token]);
 
-  // --- Chart data for Admin/Supplier ---
-  let monthlyRevenueChartData, orderStatusChartData, mostSellingProductsChartData;
-  if (dashboardData && (userRole === "SUPPLIER" || userRole === "ADMIN")) {
-    monthlyRevenueChartData = {
-      labels: dashboardData.monthlyRevenue
-        ? dashboardData.monthlyRevenue.map((item) => item.month)
-        : [],
-      datasets: [
-        {
-          label: "Revenue (AED)",
-          data: dashboardData.monthlyRevenue
-            ? dashboardData.monthlyRevenue.map((item) => item.revenue)
-            : [],
-          backgroundColor: dashboardData.monthlyRevenue
-            ? dashboardData.monthlyRevenue.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
+  return { data, loading, error };
+}
 
-    orderStatusChartData = {
-      labels: dashboardData.orderStatusDistribution
-        ? dashboardData.orderStatusDistribution.map((item) => item.status)
-        : [],
-      datasets: [
-        {
-          label: "Order Count",
-          data: dashboardData.orderStatusDistribution
-            ? dashboardData.orderStatusDistribution.map((item) => item.count)
-            : [],
-          backgroundColor: dashboardData.orderStatusDistribution
-            ? dashboardData.orderStatusDistribution.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
+function buildLineDataset(label, data) {
+  return {
+    label,
+    data,
+    borderWidth: 2,
+    borderColor: palette[0],
+    backgroundColor: "rgba(0,0,0,0)",
+    tension: 0.4,
+  };
+}
 
-    mostSellingProductsChartData = {
-      labels: dashboardData.mostSellingProducts
-        ? dashboardData.mostSellingProducts.map((item) => item.name)
-        : [],
-      datasets: [
-        {
-          label: "Quantity Sold",
-          data: dashboardData.mostSellingProducts
-            ? dashboardData.mostSellingProducts.map((item) => item.quantity)
-            : [],
-          backgroundColor: dashboardData.mostSellingProducts
-            ? dashboardData.mostSellingProducts.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
-  }
+function buildBarDataset(label, data, colorIdx = 1) {
+  return {
+    label,
+    data,
+    backgroundColor: palette[colorIdx % palette.length],
+    borderRadius: 4,
+  };
+}
 
-  // --- Chart data for Garage ---
-  let monthlyOrdersChartData, mostBoughtProductsChartData, customerDistributionChartData;
-  if (dashboardData && userRole === "GARAGE") {
-    monthlyOrdersChartData = {
-      labels: dashboardData.monthlyOrders
-        ? dashboardData.monthlyOrders.map((item) => item.month)
-        : [],
-      datasets: [
-        {
-          label: "Orders Count",
-          data: dashboardData.monthlyOrders
-            ? dashboardData.monthlyOrders.map((item) => item.count)
-            : [],
-          backgroundColor: dashboardData.monthlyOrders
-            ? dashboardData.monthlyOrders.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
+function Dashboard() {
+  const rawRole = localStorage.getItem("user-role") || "";
+  const userRole = rawRole.replace(/"/g, "");
+  const token = localStorage.getItem("token");
 
-    mostBoughtProductsChartData = {
-      labels: dashboardData.mostBoughtProducts
-        ? dashboardData.mostBoughtProducts.map((item) => item.name)
-        : [],
-      datasets: [
-        {
-          label: "Quantity Bought",
-          data: dashboardData.mostBoughtProducts
-            ? dashboardData.mostBoughtProducts.map((item) => item.quantity)
-            : [],
-          backgroundColor: dashboardData.mostBoughtProducts
-            ? dashboardData.mostBoughtProducts.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
+  const endpoint =
+    userRole === "GARAGE"
+      ? `${import.meta.env.VITE_BACKEND_URL}/api/dashboard/garage/dashboard/stats`
+      : userRole === "SUPPLIER" || userRole === "ADMIN"
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/dashboard/admin/dashboard/stats`
+        : null;
 
-    customerDistributionChartData = {
-      labels: dashboardData.customerDistribution
-        ? dashboardData.customerDistribution.map((item) => item.customerId)
-        : [],
-      datasets: [
-        {
-          label: "Orders by Customer",
-          data: dashboardData.customerDistribution
-            ? dashboardData.customerDistribution.map((item) => item.count)
-            : [],
-          backgroundColor: dashboardData.customerDistribution
-            ? dashboardData.customerDistribution.map((_, idx) => customColors[idx % customColors.length])
-            : [],
-        },
-      ],
-    };
-  }
+  const { data, loading, error } = useDashboardData(endpoint, token);
 
+  // === Memoized chart configs ===
+  const charts = useMemo(() => {
+    if (!data) return {};
+    const makeLabels = (arr, key) => arr.map((x) => x[key]);
+    const makeValues = (arr, key) => arr.map((x) => x[key]);
+
+    if (userRole === "SUPPLIER" || userRole === "ADMIN") {
+      return {
+        monthlyRevenue: {
+          labels: makeLabels(data.monthlyRevenue, "month"),
+          datasets: [buildLineDataset("Revenue (AED)", makeValues(data.monthlyRevenue, "revenue"))],
+        },
+        monthlyOrders: {
+          labels: makeLabels(data.monthlyOrders, "month"),
+          datasets: [buildLineDataset("Orders", makeValues(data.monthlyOrders, "count"))],
+        },
+        monthlyProfit: {
+          labels: makeLabels(data.monthlyProfit, "month"),
+          datasets: [buildLineDataset("Profit", makeValues(data.monthlyProfit, "profit"))],
+        },
+        dailyRevenueLast30: {
+          labels: makeLabels(data.dailyRevenueLast30, "date"),
+          datasets: [buildLineDataset("Daily Revenue", makeValues(data.dailyRevenueLast30, "revenue"))],
+        },
+        orderStatusDistribution: {
+          labels: makeLabels(data.orderStatusDistribution, "status"),
+          datasets: [
+            {
+              data: makeValues(data.orderStatusDistribution, "count"),
+              backgroundColor: palette,
+            },
+          ],
+        },
+        salesByCategory: {
+          labels: makeLabels(data.salesByCategory, "category"),
+          datasets: [buildBarDataset("Revenue", makeValues(data.salesByCategory, "revenue"), 2)],
+        },
+        mostSellingProducts: {
+          labels: makeLabels(data.mostSellingProducts, "name"),
+          datasets: [buildBarDataset("Quantity", makeValues(data.mostSellingProducts, "quantity"), 3)],
+        },
+      };
+    }
+
+    if (userRole === "GARAGE") {
+      return {
+        monthlyOrders: {
+          labels: makeLabels(data.monthlyOrders, "month"),
+          datasets: [buildLineDataset("Orders", makeValues(data.monthlyOrders, "count"))],
+        },
+        monthlySpending: {
+          labels: makeLabels(data.monthlySpending, "month"),
+          datasets: [buildLineDataset("Spending (AED)", makeValues(data.monthlySpending, "spending"))],
+        },
+        orderStatusDistribution: {
+          labels: makeLabels(data.orderStatusDistribution, "status"),
+          datasets: [
+            {
+              data: makeValues(data.orderStatusDistribution, "count"),
+              backgroundColor: palette,
+            },
+          ],
+        },
+        customerDistribution: {
+          labels: makeLabels(data.customerDistribution, "customerId"),
+          datasets: [
+            {
+              data: makeValues(data.customerDistribution, "count"),
+              backgroundColor: palette,
+            },
+          ],
+        },
+        mostBoughtProducts: {
+          labels: makeLabels(data.mostBoughtProducts, "name"),
+          datasets: [buildBarDataset("Quantity", makeValues(data.mostBoughtProducts, "quantity"), 4)],
+        },
+        spendingByCategory: {
+          labels: makeLabels(data.spendingByCategory, "category"),
+          datasets: [buildBarDataset("Spending", makeValues(data.spendingByCategory, "spending"), 5)],
+        },
+        spendingBySupplier: {
+          labels: makeLabels(data.spendingBySupplier, "supplier"),
+          datasets: [buildBarDataset("Spending", makeValues(data.spendingBySupplier, "spending"), 6)],
+        },
+      };
+    }
+    return {};
+  }, [data, userRole]);
+
+  // === Cards ===
+  const cards = useMemo(() => {
+    if (!data) return [];
+    if (userRole === "SUPPLIER" || userRole === "ADMIN") {
+      return [
+        {
+          title: "Average Sales / Item",
+          value: Number(data.averageSalesPerItem || 0).toFixed(2),
+          suffix: "",
+        },
+        {
+          title: "Total Revenue",
+          value: Number(data.totalRevenue || 0).toLocaleString(),
+          suffix: " AED",
+        },
+        {
+          title: "Net Profit",
+          value: Number(data.profit || 0).toLocaleString(),
+          suffix: " AED",
+        },
+      ];
+    }
+    if (userRole === "GARAGE") {
+      return [
+        {
+          title: "Total Orders",
+          value: data.totalOrders || 0,
+        },
+        {
+          title: "Total Spent",
+          value: Number(data.totalSpent || 0).toLocaleString(),
+          suffix: " AED",
+        },
+        {
+          title: "Avg. Order Value",
+          value: Number(data.averageOrderValue || 0).toFixed(2),
+          suffix: " AED",
+        },
+      ];
+    }
+    return [];
+  }, [data, userRole]);
+
+  // === Render ===
   return (
     <Layout>
-      <div className="container mx-auto px-4 my-8">
-        <div className=" flex flex-col items-center justify-center p-8 rounded-xl">
-          <div className="transform hover:scale-105 mb-10 transition-transform duration-300">
-            <Link to="/">
-              <img
-                src={logo}
-                alt="logo"
-                width={240}
-                height={240}
-                className="rounded-lg"
+      <div className="container mx-auto px-4 pb-8">
+
+
+        <div className="flex justify-end pb-6">
+          <button
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            onClick={() => {/* Add export functionality */ }}
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="mt-6 animate-pulse">
-              <p className="text-blue-600">Loading dashboard data...</p>
-            </div>
-          ) : error ? (
-            <div className="mt-6 bg-red-50 p-4 rounded-lg border border-red-200">
-              <p className="text-red-600">Error: {error}</p>
-            </div>
-          ) : dashboardData ? (
-            <>
-              {/* Existing Cards Section */}
-              {(userRole === "SUPPLIER" || userRole === "ADMIN") && (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-8 w-full pt-20">
-                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h2 className="text-xl font-bold mb-3 text-gray-800">
-                      Average Sales Per Item
-                    </h2>
-                    <p className="text-4xl text-blue-600 font-semibold">
-                      {dashboardData.averageSalesPerItem
-                        ? Number(dashboardData.averageSalesPerItem).toFixed(2)
-                        : "0.00"}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h2 className="text-xl font-bold mb-3 text-gray-800">
-                          Total Revenue
-                    </h2>
-                    <p className="text-4xl text-blue-600 font-semibold">
-                          {dashboardData.totalRevenue
-                            ? Number(dashboardData.totalRevenue).toFixed(2)
-                        : "0.00"}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h2 className="text-xl font-bold mb-3 text-gray-800">
-                      Net Profit
-                    </h2>
-                    <p className="text-4xl text-green-600 font-semibold">
-                          {dashboardData.profit != null
-                            ? Number(dashboardData.profit).toFixed(2)
-                        : "0.00"}{" "}
-                      AED
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h2 className="text-xl font-bold mb-3 text-gray-800">
-                      Most Selling Products
-                    </h2>
-                    <ul className="space-y-3">
-                      {dashboardData.mostSellingProducts &&
-                        dashboardData.mostSellingProducts.map((prod) => (
-                          <li
-                            key={prod.productId}
-                            className="flex justify-between items-center pb-2"
-                          >
-                            <span className="font-semibold capitalize text-gray-700">
-                              {prod.name}
-                            </span>
-                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                              {prod.quantity} sold
-                            </span>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-              {userRole === "GARAGE" && (
-                <div className="w-full pb-20 gap-8">
-                  <div className="bg-gray-50 p-6 rounded-xl shadow-md">
-                    <h2 className="text-xl font-bold text-start mb-6 text-gray-800">
-                      Most Bought Products
-                    </h2>
-                    <ul className="space-y-3">
-                      {dashboardData.mostBoughtProducts &&
-                        dashboardData.mostBoughtProducts.map((prod) => (
-                          <li
-                            key={prod.productId}
-                            className="flex justify-between items-center pb-2"
-                          >
-                            <span className="font-semibold capitalize text-gray-700">
-                              {prod.name}
-                            </span>
-                            <div className="flex items-center gap-4">
-                              <span className="text-gray-600">{prod.price} AED</span>
-                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                                {prod.quantity} bought
-                              </span>
-                            </div>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                
-                </div>
-              )}
-
-              {/* New Charts Section */}
-              {(userRole === "SUPPLIER" || userRole === "ADMIN") && dashboardData.monthlyRevenue && (
-                <div className="pt-12 w-full">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Monthly Revenue
-                      </h3>
-                      <Bar
-                        data={monthlyRevenueChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "top" } },
-                        }}
-                      />
-                    </div>
-                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Order Status Distribution
-                      </h3>
-                      <Pie
-                        data={orderStatusChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "bottom" } },
-                        }}
-                      />
-                    </div>
-                    <div className="bg-gray-50 xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Most Selling Products
-                      </h3>
-                      <Bar
-                        data={mostSellingProductsChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "top" } },
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {userRole === "GARAGE" && dashboardData.monthlyOrders && (
-                <div className="mt-12 w-full">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Monthly Orders
-                      </h3>
-                      <Bar
-                        data={monthlyOrdersChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "top" } },
-                        }}
-                      />
-                    </div>
-                    <div className="bg-gray-50 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Customer Distribution
-                      </h3>
-                      <Pie
-                        data={customerDistributionChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "bottom" } },
-                        }}
-                      />
-                    </div>
-                    <div className="bg-gray-50 xl:col-span-2 p-6 h-[350px] rounded-xl shadow-md">
-                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
-                        Most Bought Products
-                      </h3>
-                      <Bar
-                        data={mostBoughtProductsChartData}
-                        options={{
-                          responsive: true,
-                          plugins: { legend: { position: "top" } },
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-              <p className="text-yellow-600">No dashboard data available.</p>
-            </div>
-          )}
+            </svg>
+            Export Detail
+          </button>
         </div>
+
+        {loading && (
+          <p className="text-blue-600 text-center animate-pulse">Loading dashboard…</p>
+        )}
+        {error && (
+          <p className="text-red-600 text-center bg-red-50 p-4 rounded-lg border">{error}</p>
+        )}
+        {!loading && !error && !data && (
+          <p className="text-yellow-700 text-center">No dashboard data available.</p>
+        )}
+
+        {/* ===== CARDS ===== */}
+        {data && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+            {cards.map((c, idx) => (
+              <motion.div
+                key={c.title}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                custom={idx}
+                className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:shadow-lg"
+              >
+                <h3 className="text-gray-600 text-sm font-medium mb-1 uppercase tracking-wide">
+                  {c.title}
+                </h3>
+                <p className="text-3xl font-semibold text-gray-900">
+                  {c.value}
+                  {c.suffix}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* ===== CHARTS ===== */}
+        {data && (
+          <section className="space-y-12">
+            {/** Helper function below renders same structure for any chart object */}
+            {Object.entries(charts).map(([key, chartData]) => (
+              <motion.div
+                key={key}
+                className="bg-white rounded-2xl shadow p-6 border border-gray-100"
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                <h4 className="text-lg font-semibold mb-4 capitalize text-gray-700">
+                  {key.replace(/([A-Z])/g, " $1").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </h4>
+                <div className="h-[350px]">
+                  {(() => {
+                    if (key.includes("Distribution")) return <Pie data={chartData} options={{ plugins: { legend: { position: "bottom" } } }} />;
+                    if (key.includes("most") || key.includes("salesBy") || key.includes("spending"))
+                      return <Bar data={chartData} options={{ plugins: { legend: { position: "top" } } }} />;
+                    return <Line data={chartData} options={{ plugins: { legend: { position: "top" } }, tension: 0.4 }} />;
+                  })()}
+                </div>
+              </motion.div>
+            ))}
+          </section>
+        )}
       </div>
     </Layout>
   );

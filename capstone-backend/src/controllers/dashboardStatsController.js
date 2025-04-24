@@ -1,93 +1,151 @@
-const { PrismaClient } = require('@prisma/client')
+/******************************************************************
+ *  ADMIN / SUPPLIER  DASHBOARD
+ *  (route:  GET /api/dashboard/admin/dashboard/stats)
+ ******************************************************************/
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.getAdminDashboardStats = async (req, res) => {
   try {
-    const orders = await prisma.order.findMany();
+    /* ----------------------------------------------------------
+     * 1.  Pull everything we need in two queries
+     * -------------------------------------------------------- */
+    const orders = await prisma.order.findMany();                  // all orders
+    const allProductIds = [
+      ...new Set(
+        orders.flatMap((o) => {
+          let items = o.items;
+          if (typeof items === "string") {
+            try { items = JSON.parse(items); } catch { items = []; }
+          }
+          return items.map((it) => it.productId);
+        })
+      ),
+    ];
 
-    // Monthly revenue calculation
+    const products = await prisma.products.findMany({
+      where: { id: { in: allProductIds } },
+      select: { id: true, name: true, price: true, category: true },
+    });
+
+    /* ----------------------------------------------------------
+     * 2.  Scratch-pads for calcs
+     * -------------------------------------------------------- */
+    const fmtMonth = (d) =>
+      `${d.getFullYear()}-${(`0${d.getMonth() + 1}`).slice(-2)}`;
+    const today = new Date();
+    const dayKey = (d) => d.toISOString().substring(0, 10); // YYYY-MM-DD
+
     const monthlyRevenueMap = {};
-    orders.forEach((order) => {
-      const date = new Date(order.createdAt);
-      const key = `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}`;
-      monthlyRevenueMap[key] = (monthlyRevenueMap[key] || 0) + order.totalPrice;
-    });
-    const monthlyRevenue = Object.entries(monthlyRevenueMap)
-      .map(([month, revenue]) => ({ month, revenue }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-
-    // Order status distribution
+    const monthlyProfitMap = {};
+    const monthlyOrdersMap = {};
+    const dailyRevenue30Map = {};
     const statusCounts = {};
-    orders.forEach((order) => {
-      const status = order.status;
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
-    });
-    const orderStatusDistribution = Object.entries(statusCounts).map(
-      ([status, count]) => ({ status, count })
-    );
+    const productQtyMap = {};
+    const categoryRevenueMap = {};
 
-    // Overall statistics
     let totalRevenue = 0;
     let totalProfit = 0;
-    let totalQuantity = 0;
-    const productSales = {};
+    let totalQty = 0;
 
+    /* ----------------------------------------------------------
+     * 3.  Walk every order once
+     * -------------------------------------------------------- */
     orders.forEach((order) => {
+      const orderDate = new Date(order.createdAt);
+      const mKey = fmtMonth(orderDate);
+
+      /* 3a. card-level & monthly numbers -------------------- */
+      monthlyOrdersMap[mKey] = (monthlyOrdersMap[mKey] || 0) + 1;
+      monthlyRevenueMap[mKey] = (monthlyRevenueMap[mKey] || 0) + order.totalPrice;
+      const profitForOrder = order.totalPrice * 0.1;          // 10 % margin
+      monthlyProfitMap[mKey] = (monthlyProfitMap[mKey] || 0) + profitForOrder;
+
+      totalRevenue += order.totalPrice;
+      totalProfit += profitForOrder;
+
+      /* 3b. status pie -------------------------------------- */
+      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+
+      /* 3c. daily revenue (last 30 d) ----------------------- */
+      const diffDays =
+        (today - orderDate) / (1000 * 60 * 60 * 24); // ms → days
+      if (diffDays <= 30) {
+        const dKey = dayKey(orderDate);
+        dailyRevenue30Map[dKey] =
+          (dailyRevenue30Map[dKey] || 0) + order.totalPrice;
+      }
+
+      /* 3d. per-item calcs --------------------------------- */
       let items = order.items;
       if (typeof items === "string") {
-        try {
-          items = JSON.parse(items);
-        } catch (err) {
-          items = [];
-        }
+        try { items = JSON.parse(items); } catch { items = []; }
       }
-      items.forEach((item) => {
-        totalRevenue += item.totalPrice;
-        totalProfit += item.totalPrice * 0.1;
-        totalQuantity += item.quantity;
-        productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
+
+      items.forEach((it) => {
+        totalQty += it.quantity;
+        productQtyMap[it.productId] =
+          (productQtyMap[it.productId] || 0) + it.quantity;
+
+        /* revenue by category – need the product’s category */
+        const prod = products.find((p) => p.id === it.productId);
+        const cat = prod?.category || "unclassified";
+        categoryRevenueMap[cat] =
+          (categoryRevenueMap[cat] || 0) + it.totalPrice;
       });
     });
 
-    const distinctProductsCount = Object.keys(productSales).length;
-    const averageSalesPerItem = distinctProductsCount > 0
-      ? totalQuantity / distinctProductsCount
-      : 0;
+    /* ----------------------------------------------------------
+     * 4.  Transform helper maps → tidy arrays
+     * -------------------------------------------------------- */
+    const toPairArr = (obj, k1, k2) =>
+      Object.entries(obj)
+        .map(([k, v]) => ({ [k1]: k, [k2]: v }))
+        .sort((a, b) => ("" + a[k1]).localeCompare("" + b[k1]));
 
-    // Most selling products
-    const sortedSales = Object.entries(productSales)
-      .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
+    const monthlyRevenue = toPairArr(monthlyRevenueMap, "month", "revenue");
+    const monthlyOrders = toPairArr(monthlyOrdersMap, "month", "count");
+    const monthlyProfit = toPairArr(monthlyProfitMap, "month", "profit");
+    const dailyRevenueLast30 = toPairArr(dailyRevenue30Map, "date", "revenue");
+    const orderStatusDistribution = toPairArr(statusCounts, "status", "count");
+    const salesByCategory = toPairArr(categoryRevenueMap, "category", "revenue");
+
+    /* 4a.  Top-5 most-selling products ----------------------- */
+    const mostSellingProducts = Object.entries(productQtyMap)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
-      .map(([productId, quantity]) => ({ productId, quantity }));
+      .map(([productId, quantity]) => {
+        const p = products.find((x) => x.id === productId);
+        return { productId, name: p?.name || "Unknown", quantity, price: p?.price || 0 };
+      });
 
-    const topProductIds = sortedSales.map((item) => item.productId);
-    const productsData = await prisma.products.findMany({
-      where: { id: { in: topProductIds } },
-      select: { id: true, name: true, price: true },
-    });
+    /* ----------------------------------------------------------
+     * 5.  Cards
+     * -------------------------------------------------------- */
+    const distinctProductsCount = Object.keys(productQtyMap).length;
+    const averageSalesPerItem =
+      distinctProductsCount > 0 ? totalQty / distinctProductsCount : 0;
 
-    const mostSellingProducts = sortedSales.map((item) => {
-      const prod = productsData.find((p) => p.id === item.productId);
-      return {
-        productId: item.productId,
-        name: prod ? prod.name : "Unknown",
-        quantity: item.quantity,
-        price: prod ? prod.price : 0
-      };
-    });
-
+    /* ----------------------------------------------------------
+     * 6.  Respond
+     * -------------------------------------------------------- */
     return res.json({
-      monthlyRevenue,
-      orderStatusDistribution,
-      mostSellingProducts,
-      averageSalesPerItem,
+      /* ======= 7 CHART DATASETS ======= */
+      monthlyRevenue,           // Chart 1 – line / bar
+      monthlyOrders,            // Chart 2 – line / bar
+      monthlyProfit,            // Chart 3 – line
+      dailyRevenueLast30,       // Chart 4 – line (last 30 days)
+      orderStatusDistribution,  // Chart 5 – pie / doughnut
+      salesByCategory,          // Chart 6 – pie / bar
+      mostSellingProducts,      // Chart 7 – bar
+
+      /* ======= 3 TOP-CARDS ======= */
       totalRevenue,
       profit: totalProfit,
-      totalQuantity,
-      distinctProductsCount
+      averageSalesPerItem,
     });
-  } catch (error) {
-    console.error("Error fetching admin dashboard stats:", error);
+  } catch (err) {
+    console.error("Error fetching admin dashboard stats:", err);
     return res
       .status(500)
       .json({ error: "Error fetching admin dashboard stats" });
@@ -95,79 +153,131 @@ exports.getAdminDashboardStats = async (req, res) => {
 };
 
 
+
+/******************************************************************
+ *  GARAGE  DASHBOARD
+ *  (route:  GET /api/dashboard/garage/dashboard/stats)
+ ******************************************************************/
 exports.getGarageDashboardStats = async (req, res) => {
   try {
-    // Get garage ID from authenticated user (middleware should set req.user)
     const garageId = req.user.id;
 
-    // Fetch orders placed by this garage
+    /* ------------------------------------------------------ */
     const orders = await prisma.order.findMany({
       where: { userId: garageId },
     });
 
-    // Chart 1: Monthly Orders Count
-    const monthlyOrdersMap = {};
-    orders.forEach((order) => {
-      const date = new Date(order.createdAt);
-      const key = `${date.getFullYear()}-${("0" + (date.getMonth() + 1)).slice(-2)}`;
-      monthlyOrdersMap[key] = (monthlyOrdersMap[key] || 0) + 1;
-    });
-    const monthlyOrders = Object.entries(monthlyOrdersMap)
-      .map(([month, count]) => ({ month, count }))
-      .sort((a, b) => a.month.localeCompare(b.month));
+    const allProductIds = [
+      ...new Set(
+        orders.flatMap((o) => {
+          let items = o.items;
+          if (typeof items === "string") {
+            try { items = JSON.parse(items); } catch { items = []; }
+          }
+          return items.map((it) => it.productId);
+        })
+      ),
+    ];
 
-    // Chart 2: Most Bought Products (from order items)
-    const productSales = {};
+    const products = await prisma.products.findMany({
+      where: { id: { in: allProductIds } },
+      select: { id: true, name: true, category: true, createdBy: true, price: true },
+    });
+
+    /* ------------------------------------------------------ */
+    const fmtMonth = (d) =>
+      `${d.getFullYear()}-${(`0${d.getMonth() + 1}`).slice(-2)}`;
+
+    const monthlyOrdersMap = {};
+    const monthlySpendingMap = {};
+    const statusCounts = {};
+    const productSalesMap = {};
+    const customerCounts = {};
+    const categorySpendMap = {};
+    const supplierSpendMap = {};
+
+    let totalSpent = 0;
+
     orders.forEach((order) => {
+      const oDate = new Date(order.createdAt);
+      const mKey = fmtMonth(oDate);
+
+      monthlyOrdersMap[mKey] = (monthlyOrdersMap[mKey] || 0) + 1;
+      monthlySpendingMap[mKey] = (monthlySpendingMap[mKey] || 0) + order.totalPrice;
+
+      totalSpent += order.totalPrice;
+
+      statusCounts[order.status] =
+        (statusCounts[order.status] || 0) + 1;
+
+      const customerId = order.customerId || "Unknown";
+      customerCounts[customerId] =
+        (customerCounts[customerId] || 0) + 1;
+
       let items = order.items;
       if (typeof items === "string") {
-        try {
-          items = JSON.parse(items);
-        } catch (err) {
-          items = [];
-        }
+        try { items = JSON.parse(items); } catch { items = []; }
       }
-      items.forEach((item) => {
-        const { productId, quantity } = item;
-        productSales[productId] = (productSales[productId] || 0) + quantity;
+
+      items.forEach((it) => {
+        productSalesMap[it.productId] =
+          (productSalesMap[it.productId] || 0) + it.quantity;
+
+        const prod = products.find((p) => p.id === it.productId);
+
+        const cat = prod?.category || "unclassified";
+        categorySpendMap[cat] =
+          (categorySpendMap[cat] || 0) + it.totalPrice;
+
+        const supplier = prod?.createdBy || "Unknown";
+        supplierSpendMap[supplier] =
+          (supplierSpendMap[supplier] || 0) + it.totalPrice;
       });
     });
-    const sortedProductSales = Object.entries(productSales)
-      .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
+
+    /* ------------------------------------------------------ */
+    const toPairArr = (obj, k1, k2) =>
+      Object.entries(obj)
+        .map(([k, v]) => ({ [k1]: k, [k2]: v }))
+        .sort((a, b) => ("" + a[k1]).localeCompare("" + b[k1]));
+
+    const monthlyOrders = toPairArr(monthlyOrdersMap, "month", "count");
+    const monthlySpending = toPairArr(monthlySpendingMap, "month", "spending");
+    const orderStatusDistribution = toPairArr(statusCounts, "status", "count");
+    const customerDistribution = toPairArr(customerCounts, "customerId", "count");
+    const spendingByCategory = toPairArr(categorySpendMap, "category", "spending");
+    const spendingBySupplier = toPairArr(supplierSpendMap, "supplier", "spending");
+
+    const mostBoughtProducts = Object.entries(productSalesMap)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
-      .map(([productId, quantity]) => ({ productId, quantity }));
-    // Get product names for top bought products
-    const topProductIds = sortedProductSales.map((item) => item.productId);
-    const productsData = await prisma.products.findMany({
-      where: { id: { in: topProductIds } },
-      select: { id: true, name: true },
-    });
-    const mostBoughtProducts = sortedProductSales.map((item) => {
-      const prod = productsData.find((p) => p.id === item.productId);
-      return {
-        productId: item.productId,
-        name: prod ? prod.name : "Unknown",
-        quantity: item.quantity,
-      };
-    });
+      .map(([productId, quantity]) => {
+        const p = products.find((x) => x.id === productId);
+        return { productId, name: p?.name || "Unknown", quantity };
+      });
 
-    const customerCounts = {};
-    orders.forEach((order) => {
-      // Assume order.customerId is set when an order is placed on behalf of a customer.
-      const custId = order.customerId || "Unknown";
-      customerCounts[custId] = (customerCounts[custId] || 0) + 1;
-    });
-    const customerDistribution = Object.entries(customerCounts).map(
-      ([customerId, count]) => ({ customerId, count })
-    );
+    /* ------------------------------------------------------ */
+    const totalOrders = orders.length;
+    const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
 
+    /* ------------------------------------------------------ */
     return res.json({
-      monthlyOrders, // Chart 1
-      mostBoughtProducts, // Chart 2
-      customerDistribution, // Chart 3
+      /* ======= 7 CHART DATASETS ======= */
+      monthlyOrders,           // Chart 1
+      monthlySpending,         // Chart 2
+      orderStatusDistribution, // Chart 3
+      customerDistribution,    // Chart 4
+      mostBoughtProducts,      // Chart 5
+      spendingByCategory,      // Chart 6
+      spendingBySupplier,      // Chart 7
+
+      /* ======= 3 TOP-CARDS ======= */
+      totalOrders,
+      totalSpent,
+      averageOrderValue,
     });
-  } catch (error) {
-    console.error("Error fetching garage dashboard stats:", error);
+  } catch (err) {
+    console.error("Error fetching garage dashboard stats:", err);
     return res
       .status(500)
       .json({ error: "Error fetching garage dashboard stats" });
