@@ -1,13 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import Layout from "../shared/Layout";
-import logo from "/Screenshot_3.png";
-import {
-  Bar,
-  Pie,
-  Line,
-} from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,6 +14,9 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+import jsPDF from "jspdf";
+// 👉 switched to the oklch‑compatible fork
+import html2canvas from "html2canvas-pro";
 
 ChartJS.register(
   CategoryScale,
@@ -30,7 +27,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
 );
 
 import { defaults } from "chart.js/auto";
@@ -108,6 +105,11 @@ function buildBarDataset(label, data, colorIdx = 1) {
 }
 
 function Dashboard() {
+  const dashboardRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const [isExporting, setIsExporting] = useState(false);
+
   const rawRole = localStorage.getItem("user-role") || "";
   const userRole = rawRole.replace(/"/g, "");
   const token = localStorage.getItem("token");
@@ -253,32 +255,105 @@ function Dashboard() {
     return [];
   }, [data, userRole]);
 
+  // === Export to PDF ===
+  const handleExport = () => {
+    if (isExporting) return; // guard against double clicks
+    setIsExporting(true);
+
+    const button = buttonRef.current;
+    const container = dashboardRef.current;
+    if (!container || !button) {
+      setIsExporting(false);
+      return;
+    }
+
+    html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      ignoreElements: (el) => el === button, // exclude the button instead of display:none
+    })
+      .then((canvas) => {
+        const pdf = new jsPDF("p", "pt", "a4");
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+        const totalPages = Math.ceil(imgHeight / pdfHeight);
+
+        // Add title and timestamp on the first page
+        pdf.setFontSize(16);
+        pdf.text(`${userRole} Dashboard Report`, 40, 40);
+        pdf.setFontSize(10);
+        pdf.text(`Generated on: ${new Date().toLocaleString()}`, 40, 60);
+
+        // Adjust image position to account for title
+        const topMargin = 80;
+        for (let i = 0; i < totalPages; i++) {
+          if (i > 0) pdf.addPage();
+          const yOffset = topMargin - i * pdfHeight;
+          pdf.addImage(imgData, "PNG", 0, yOffset, imgWidth, imgHeight);
+        }
+
+        pdf.save(`Detail.pdf`);
+      })
+      .catch((error) => {
+        console.error("Error generating PDF:", error);
+      })
+      .finally(() => {
+        setIsExporting(false);
+      });
+  };
+
   // === Render ===
   return (
     <Layout>
-      <div className="container mx-auto px-4 pb-8">
-
-
+      <div ref={dashboardRef} className="container mx-auto px-4 pb-8">
         <div className="flex justify-end pb-6">
           <button
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            onClick={() => {/* Add export functionality */ }}
+            ref={buttonRef}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-60"
+            onClick={handleExport}
+            disabled={isExporting}
           >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            Export Detail
+            {isExporting ? (
+              <svg
+                className="animate-spin w-5 h-5 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+            )}
+            {isExporting ? "Exporting…" : "Export Detail"}
           </button>
         </div>
 
@@ -319,7 +394,6 @@ function Dashboard() {
         {/* ===== CHARTS ===== */}
         {data && (
           <section className="space-y-12">
-            {/** Helper function below renders same structure for any chart object */}
             {Object.entries(charts).map(([key, chartData]) => (
               <motion.div
                 key={key}
@@ -334,7 +408,8 @@ function Dashboard() {
                 </h4>
                 <div className="h-[350px]">
                   {(() => {
-                    if (key.includes("Distribution")) return <Pie data={chartData} options={{ plugins: { legend: { position: "bottom" } } }} />;
+                    if (key.includes("Distribution"))
+                      return <Pie data={chartData} options={{ plugins: { legend: { position: "bottom" } } }} />;
                     if (key.includes("most") || key.includes("salesBy") || key.includes("spending"))
                       return <Bar data={chartData} options={{ plugins: { legend: { position: "top" } } }} />;
                     return <Line data={chartData} options={{ plugins: { legend: { position: "top" } }, tension: 0.4 }} />;
