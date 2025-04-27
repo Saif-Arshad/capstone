@@ -12,16 +12,17 @@ const products = [
                 {
                     name: "Black",
                     wheels: [
-                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/black-wheel/${i + 1}.png`) },
-                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/bronze-wheel/${i + 1}.png`) },
-                        { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/gunmetal-wheel/${i + 1}.png`) },
+                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/black/${i + 1}.png`) },
+                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/brown/${i + 1}.png`) },
+                        { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/white/${i + 1}.png`) },
                     ],
                 },
                 {
                     name: "Brown",
                     wheels: [
-                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/brown/black-wheel/${i + 1}.png`) },
-                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/brown/bronze-wheel/${i + 1}.png`) },
+                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/black/${i + 1}.png`) },
+                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/brown/${i + 1}.png`) },
+                        { name: "White", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/white/${i + 1}.png`) },
                     ],
                 },
                 {
