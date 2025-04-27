@@ -1,5 +1,5 @@
 import  { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { BsBasket } from "react-icons/bs";
 import { ChevronRight, Money } from "@mui/icons-material";
@@ -292,19 +292,21 @@ function ProductMainDetail() {
                             </div>
 
                             {/* 3D View Button (MUI Button) */}
-                            {product.EmbedLink && (
+                            {/* {product.EmbedLink && ( */}
+                                    {/* onClick={() => setIsModalOpen(true)} */}
                                 <div className="flex items-center justify-end my-8">
+                                    <Link to='/customs' >
                                     <button
-                                        onClick={() => setIsModalOpen(true)}
 
-                                        className="px-6 flex items-center justify-center gap-2 cursor-pointer py-3 bg-[#ff4d30] text-white font-semibold rounded-lg hover:bg-[#ff4c30d6] transition"
-                                    >
+className="px-6 flex items-center justify-center gap-2 cursor-pointer py-3 bg-[#ff4d30] text-white font-semibold rounded-lg hover:bg-[#ff4c30d6] transition"
+>
                                 
                                         View in 3D
                                         <ChevronRight size={22} />
                                     </button>
+                                        </Link>
                                 </div>
-                            )}
+                            {/* )} */}
 
                             {/* Add to Cart / Buy Now */}
                             <div className="grid grid-cols-2 gap-4 pt-8">

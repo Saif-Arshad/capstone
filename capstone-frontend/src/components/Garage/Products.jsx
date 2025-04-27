@@ -620,7 +620,7 @@ function MyProducts() {
                                         </div>
                                     ))}
                                 </div>
-                                <TextField
+                                {/* <TextField
                                     label="Embed Link (optional)"
                                     name="embedLink"
                                     fullWidth
@@ -629,7 +629,7 @@ function MyProducts() {
                                     variant="outlined"
                                     value={formData.embedLink}
                                     onChange={handleFormChange}
-                                />
+                                /> */}
                             </div>
                         )}
                     </DialogContent>

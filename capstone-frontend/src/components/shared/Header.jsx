@@ -26,7 +26,6 @@ export default function Header() {
         { id: 1, link: "Home", url: "/" },
         { id: 3, link: "Shop Now", url: "/products" },
         { id: 2, link: "Customization", url: "/custom" },
-        { id: 2, link: "Shop Parts", url: "/customs" }
     ];
 
     const handleAvatarClick = (event) => {

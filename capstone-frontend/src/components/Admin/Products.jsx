@@ -591,7 +591,7 @@ function AdminProducts() {
                                         </div>
                                     ))}
                                 </div>
-                                <TextField
+                                {/* <TextField
                                     label="Embed Link (optional)"
                                     name="embedLink"
                                     fullWidth
@@ -600,7 +600,7 @@ function AdminProducts() {
                                     variant="outlined"
                                     value={formData.embedLink}
                                     onChange={handleFormChange}
-                                />
+                                /> */}
                             </div>
                         )}
                     </DialogContent>
