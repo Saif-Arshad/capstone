@@ -294,6 +294,8 @@ function ProductMainDetail() {
                             {/* 3D View Button (MUI Button) */}
                             {/* {product.EmbedLink && ( */}
                                     {/* onClick={() => setIsModalOpen(true)} */}
+                                    {
+                                id =="2792f614-fd9b-4811-8cd1-ee4bfb98a6811" &&
                                 <div className="flex items-center justify-end my-8">
                                     <Link to='/customs' >
                                     <button
@@ -306,6 +308,7 @@ className="px-6 flex items-center justify-center gap-2 cursor-pointer py-3 bg-[#
                                     </button>
                                         </Link>
                                 </div>
+                                    }
                             {/* )} */}
 
                             {/* Add to Cart / Buy Now */}
