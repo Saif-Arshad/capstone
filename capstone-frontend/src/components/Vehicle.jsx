@@ -4,25 +4,24 @@ import 'animate.css';
 const products = [
     {
         id: 1,
-        name: "Nissan 3070z",
-        description: "Customize your Nissan 3070z with various color and wheel combinations.",
+        name: "Nissan 370z",
+        description: "Customize your Nissan 370z with various color and wheel combinations.",
         price: 200,
         variants: {
             colors: [
                 {
                     name: "Black",
                     wheels: [
-                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/black/${i + 1}.png`) },
-                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/brown/${i + 1}.png`) },
-                        { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/fender/white/${i + 1}.png`) },
+                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/black-wheel/${i + 1}.png`) },
+                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/bronze-whel/${i + 1}.png`) },
+                        { name: "Gunmetal", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/black/gun-wheel/${i + 1}.png`) },
                     ],
                 },
                 {
                     name: "Brown",
                     wheels: [
-                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/black/${i + 1}.png`) },
-                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/brown/${i + 1}.png`) },
-                        { name: "White", images: Array.from({ length: 12 }, (_, i) => `/nissan/nismo/white/${i + 1}.png`) },
+                        { name: "Black", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/brown/black-wheel/${i + 1}.png`) },
+                        { name: "Bronze", images: Array.from({ length: 12 }, (_, i) => `/nissan/te3/brown/bronze-wheel/${i + 1}.png`) },
                     ],
                 },
                 {
@@ -38,8 +37,8 @@ const products = [
     },
     {
         id: 2,
-        name: "Subaru 3070z",
-        description: "Customize your Subaru 3070z with various color and wheel combinations.",
+        name: "Subaru 370z",
+        description: "Customize your Subaru 370z with various color and wheel combinations.",
         price: 200,
         variants: {
             colors: [
